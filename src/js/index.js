@@ -24,14 +24,14 @@
 //// USING WEBPACK
 ////////////////////////////////////////
 
-import cryptoData from "./getCryptoData";
+// import cryptoData from "./getCryptoData";
 
-document.write("Processed Data: <br>");
-document.write(cryptoData);
+// document.write("Processed Data: <br>");
+// document.write(cryptoData);
 
-var dataFunction = {
-    theData : cryptoData,
-};
+// var dataFunction = {
+//     theData : cryptoData,
+// };
 
 // /////////////////////////////////////////////////////////
 // // NO WEBPACK
@@ -46,8 +46,8 @@ var dataFunction = {
 //     theData : cryptoData,
 // };
 
-// // for (let i = 0; i <= 1; i++){
-// //     console.log(cryptoData);
-// //     document.write(cryptoData);
+// for (let i = 0; i <= 1; i++){
+//     console.log(cryptoData);
+//     document.write(cryptoData);
 
-// // }
+// }
