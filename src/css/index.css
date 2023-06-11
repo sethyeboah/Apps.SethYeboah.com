@@ -41,7 +41,8 @@ body {
 
 .card {
     height: auto;
-    max-width: 350px;
+    /* max-width: 350px; */
+    width: 300px;
     margin: 0 20px;
     background: white;
     transition: 0.4s;
