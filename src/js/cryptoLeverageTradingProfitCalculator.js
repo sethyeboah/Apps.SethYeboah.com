@@ -7,15 +7,15 @@ function calculate() {
     // Get the input values
     var investment = parseFloat(document.getElementById("investment").value);
     var leverage = parseFloat(document.getElementById("leverage").value);
-    var price1 = parseFloat(document.getElementById("price1").value);
-    var price2 = parseFloat(document.getElementById("price2").value);
+    var entryPrice = parseFloat(document.getElementById("entryPrice").value);
+    var exitPrice = parseFloat(document.getElementById("exitPrice").value);
 
     // Check if inputs are valid numbers
-    if (isNaN(investment) || isNaN(leverage) || isNaN(price1) || isNaN(price2)) {
+    if (isNaN(investment) || isNaN(leverage) || isNaN(entryPrice) || isNaN(exitPrice)) {
         document.getElementById("error").innerText = "Please enter valid numbers.";
     } else {
         // Calculate the percentage change
-        var percentageChange = ((price2 - price1) / price1) * 100;
+        var percentageChange = ((exitPrice - entryPrice) / entryPrice) * 100;
 
         // Calculate the profit
         var profit = investment * leverage * percentageChange * (1 / 100);
