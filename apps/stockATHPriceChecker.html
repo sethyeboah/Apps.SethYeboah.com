@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock's Percentage To All Time High</title>
+</head>
+
+<body>
+    <h1>Stock's Percentage To All Time High</h1>
+    <p>Enter a stock ticker symbol:</p>
+    <input type="text" id="stockTicker" placeholder="e.g., AAPL">
+    <button onclick="fetchStockATHPrice(); fetchStockIntradayPrice(); calculatePercentageToATH();">Get Percentage To ATH</button>
+    <p id="stockATHPrice"></p>
+    <p id="stockIntradayPrice"></p>
+    <p id="percentageToATH"></p>
+
+    <script>
+        // Data
+        const apiKey = 'TLSO3IH1J3K0ID1Z'; // Replace with your AlphaVantage API Key
+        let allTimeHigh = 0;
+        let currentStockPrice = 0;
+
+        function fetchStockATHPrice() {
+            const stockTicker = document.getElementById('stockTicker').value; // Value received after click
+            const stockATHPriceDisplay = document.getElementById('stockATHPrice');
+
+            // Check if a ticker was entered
+            if (!stockTicker) {
+                stockATHPriceDisplay.textContent = 'Please enter a stock ticker.';
+                return;
+            }
+
+            // Construct the AlphaVantage API URL
+            const apiUrlForMonthlyData = `https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol=${stockTicker}&apikey=${apiKey}`;
+
+            // Make a GET request to the AlphaVantage API for monthly data.
+            fetch(apiUrlForMonthlyData)
+                .then(response => response.json())
+                .then(monthlyData => {
+                    if (monthlyData['Monthly Time Series']) {
+                        // Extract entries and find the highest "high" value
+                        const monthlyEntries = Object.entries(monthlyData["Monthly Time Series"]);
+                        const selectedMonthlyEntries = monthlyEntries.slice(0, 30);
+
+                        for (const [date, values] of selectedMonthlyEntries) {
+                            const high = parseFloat(values["2. high"]);
+                            if (high > allTimeHigh) {
+                                allTimeHigh = high;
+                            }
+                        }
+
+                        stockATHPriceDisplay.textContent = `All Time High(ATH) price for ${stockTicker}: $${allTimeHigh}`;
+                    } else {
+                        stockATHPriceDisplay.textContent = `Stock data not found for ${stockTicker}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    stockATHPriceDisplay.textContent = 'An error occurred while fetching stock data.';
+                });
+        }
+
+        function fetchStockIntradayPrice() {
+            const stockTicker = document.getElementById('stockTicker').value;
+            const stockIntradayPriceDisplay = document.getElementById('stockIntradayPrice');
+
+            // Check if a ticker was entered
+            if (!stockTicker) {
+                stockIntradayPriceDisplay.textContent = 'Please enter a stock ticker.';
+                return;
+            }
+
+            // Construct the AlphaVantage API URL
+            const apiUrlForIntradayData = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${stockTicker}&interval=1min&apikey=${apiKey}`;
+
+            // Make a GET request to the AlphaVantage API for intraday data.
+            fetch(apiUrlForIntradayData)
+                .then(response => response.json())
+                .then(intradayData => {
+                    if (intradayData['Time Series (1min)']) {
+                        const intradayEntries = intradayData['Time Series (1min)'];
+                        const currentTime = Object.keys(intradayEntries)[0];
+                        currentStockPrice = intradayEntries[currentTime]['4. close'];
+                        stockIntradayPriceDisplay.textContent = `Intraday price for ${stockTicker}: $${currentStockPrice}`;
+                    } else {
+                        stockIntradayPriceDisplay.textContent = `Stock data not found for ${stockTicker}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    stockIntradayPriceDisplay.textContent = 'An error occurred while fetching stock data.';
+                });
+        }
+
+        function calculatePercentageToATH() {
+            // Calculate the percentage to ATH
+            const percentageToATH = ((allTimeHigh - currentStockPrice) / currentStockPrice) * 100;
+
+            // Display the percentage to ATH
+            document.getElementById("percentageToATH").textContent = `Percentage To All Time High: ${percentageToATH.toFixed(2)}%`;
+        }
+    </script>
+</body>
+
+</html>
