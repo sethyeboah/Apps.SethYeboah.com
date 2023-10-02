@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Stock All Time High Price</title>
+    <title>Stock All Time High Price & Profit</title>
     <link href="/src/css/stockATHPriceChecker.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Stock All Time High Price</h1>
+    <h1>Stock All Time High Price & Profit</h1>
     <label for="ticker">Enter Stock Ticker:</label>
     <input type="text" id="ticker">
     <button onclick="getStockData()">Get Data</button>
@@ -21,7 +21,7 @@
 
     <script>
         function getStockData() {
-            const ticker = document.getElementById("ticker").value;
+            const ticker = document.getElementById("ticker").value.toUpperCase();
             const apiKey = 'cka8ta1r01qpia5h1cogcka8ta1r01qpia5h1cp0';
             
             // Fetch historical monthly prices for the number of years provided
