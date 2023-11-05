@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Stock Prices</title>
+</head>
+
+<body>
+    <h1>Stock Prices</h1>
+    <table border="1">
+        <tr>
+            <th>Company Name</th>
+            <th>Stock Ticker</th>
+            <th>All Time High Price</th>
+            <th>Current Price</th>
+            <th>% To All Time High</th>
+        </tr>
+    </table>
+
+    <script>
+        const companies = [
+            { name: 'Google', ticker: 'GOOG' },
+            { name: 'Apple', ticker: 'AAPL' },
+            { name: 'Nvidia', ticker: 'NVDA' },
+            { name: 'Old Dominion Freight Line', ticker: 'ODFL' },
+            { name: 'Invesco QQQ', ticker: 'QQQ' },
+            { name: 'Vanguard S&P500', ticker: 'VOO' },
+            { name: 'Costco', ticker: 'COST' },
+            { name: 'United Health Group', ticker: 'UNH' },
+            { name: 'Broadcom', ticker: 'AVGO' },
+            { name: 'Microsoft', ticker: 'MSFT' },
+        ];
+
+        async function fetchData() {
+            const apiKey = 'cka8ta1r01qpia5h1cogcka8ta1r01qpia5h1cp0';
+            const table = document.querySelector('table');
+
+            for (const company of companies) {
+                // Get ticker
+                const ticker = company.ticker.toUpperCase();
+
+                // Get highest price
+                const historicalData = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${ticker}&resolution=M&from=${getDateOfTheNumberOfYearsAgoFromToday(10)}&to=${getCurrentDate()}&token=${apiKey}`);
+                const historicalDataJson = await historicalData.json();
+                const highestPrice = Math.max(...historicalDataJson.h);
+
+                // Get current price 
+                const currentData = await fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`);
+                const currentDataJson = await currentData.json();
+                const currentPrice = currentDataJson.c;
+
+                // Calculate % To ATH
+                const percentageToAllTimeHigh = ((highestPrice - currentPrice) / currentPrice) * 100;
+                
+                const row = table.insertRow(-1);
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+                const cell4 = row.insertCell(3);
+                const cell5 = row.insertCell(4);
+
+                cell1.innerHTML = company.name;
+                cell2.innerHTML = company.ticker;
+                cell3.innerHTML = highestPrice.toFixed(2);
+                cell4.innerHTML = currentPrice.toFixed(2);
+                cell5.innerHTML = percentageToAllTimeHigh.toFixed(2) + '%';
+            }
+        }
+
+        // Function to get the date of the number years ago from today.
+        function getDateOfTheNumberOfYearsAgoFromToday(yearsAgo) {
+            const currentDate = new Date();
+            currentDate.setFullYear(currentDate.getFullYear() - yearsAgo);
+            return Math.floor(currentDate / 1000); // Convert to Unix timestamp
+        }
+
+        // Function to get the current date in Unix timestamp
+        function getCurrentDate() {
+            return Math.floor(Date.now() / 1000); // Convert to Unix timestamp
+        }
+
+        fetchData();
+    </script>
+</body>
+
+</html>
