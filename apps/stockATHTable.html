@@ -19,16 +19,40 @@
 
     <script>
         const companies = [
-            { name: 'Google', ticker: 'GOOG' },
-            { name: 'Apple', ticker: 'AAPL' },
-            { name: 'Nvidia', ticker: 'NVDA' },
-            { name: 'Old Dominion Freight Line', ticker: 'ODFL' },
-            { name: 'Invesco QQQ', ticker: 'QQQ' },
             { name: 'Vanguard S&P500', ticker: 'VOO' },
+            { name: 'Invesco QQQ', ticker: 'QQQ' },
+            { name: 'Apple', ticker: 'AAPL' },
+            { name: 'Microsoft', ticker: 'MSFT' },
+            { name: 'Google', ticker: 'GOOG' },
+            { name: 'Tesla', ticker: 'TSLA' },
+            { name: 'Nvidia', ticker: 'NVDA' },
+            { name: 'Amazon', ticker: 'AMZN' },
+            { name: 'Facebook', ticker: 'META' },
+            { name: 'Broadcom', ticker: 'AVGO' },
+            { name: 'Taiwan Semiconductors', ticker: 'TSM' },
+            { name: 'AMD', ticker: 'AMD' },
+            { name: 'JP Morgan', ticker: 'JPM' },
+            { name: 'Bank Of America', ticker: 'BAC' },
+            { name: 'Old Dominion Freight Line', ticker: 'ODFL' },
             { name: 'Costco', ticker: 'COST' },
             { name: 'United Health Group', ticker: 'UNH' },
-            { name: 'Broadcom', ticker: 'AVGO' },
-            { name: 'Microsoft', ticker: 'MSFT' },
+            { name: 'NXP Semiconductors', ticker: 'NXPI' },
+            { name: 'Texas Instruments', ticker: 'TXN' },
+            { name: 'CrowdStrike', ticker: 'CRWD' },
+            { name: 'Synchrony', ticker: 'SYF' },
+            { name: 'Coinbase', ticker: 'COIN' },
+            { name: 'Paypal', ticker: 'PYPL' },
+            { name: 'Intel', ticker: 'INTC' },
+            { name: 'Palantir', ticker: 'PLTR' },
+            { name: 'Datadog', ticker: 'DDOG' },
+            { name: 'Baidu', ticker: 'BIDU' },
+            { name: 'Alibaba', ticker: 'BABA' },
+            { name: 'Xpeng', ticker: 'XPEV' },
+            { name: 'Riot Platforms', ticker: 'RIOT' },
+            { name: 'Nio', ticker: 'NIO' },
+            { name: 'Marathon Digital', ticker: 'MARA' },
+            { name: 'Rivian', ticker: 'RIVN' },
+            { name: 'Bit Digital', ticker: 'BTBT' },
         ];
 
         async function fetchData() {
@@ -51,7 +75,7 @@
 
                 // Calculate % To ATH
                 const percentageToAllTimeHigh = ((highestPrice - currentPrice) / currentPrice) * 100;
-                
+
                 const row = table.insertRow(-1);
                 const cell1 = row.insertCell(0);
                 const cell2 = row.insertCell(1);
@@ -64,6 +88,9 @@
                 cell3.innerHTML = highestPrice.toFixed(2);
                 cell4.innerHTML = currentPrice.toFixed(2);
                 cell5.innerHTML = percentageToAllTimeHigh.toFixed(2) + '%';
+                
+                // Wait
+                await delay(1500);
             }
         }
 
@@ -77,6 +104,13 @@
         // Function to get the current date in Unix timestamp
         function getCurrentDate() {
             return Math.floor(Date.now() / 1000); // Convert to Unix timestamp
+        }
+
+        // Function to wait for a certain amount of time
+        function delay(milliseconds) {
+            return new Promise(resolve => {
+                setTimeout(resolve, milliseconds);
+            });
         }
 
         fetchData();
