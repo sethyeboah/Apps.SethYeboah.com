@@ -2,18 +2,34 @@
 <html>
 
 <head>
-    <title>Stock Prices</title>
+    <title>Stock ATH Table</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Stock Prices</h1>
-    <table border="1">
+    <h1>Stock ATH Table</h1>
+    <table border="1" id="stockTable">
         <tr>
-            <th>Company Name</th>
-            <th>Stock Ticker</th>
-            <th>All Time High Price</th>
-            <th>Current Price</th>
-            <th>% To All Time High</th>
+            <th onclick="sortTable(0)">#</th>
+            <th onclick="sortTable(1)">Company Name</th>
+            <th onclick="sortTable(2)">Stock Ticker</th>
+            <th onclick="sortTable(3)">All Time High Price</th>
+            <th onclick="sortTable(4)">Current Price</th>
+            <th onclick="sortTable(5)">% To All Time High</th>
         </tr>
     </table>
 
@@ -55,11 +71,19 @@
             { name: 'Bit Digital', ticker: 'BTBT' },
         ];
 
+        // Add a variable to store the current sort order
+        let sortOrder = 1;
+
+        // Create an array to store company data
+        const stockDataArray = [];
+
         async function fetchData() {
             const apiKey = 'cka8ta1r01qpia5h1cogcka8ta1r01qpia5h1cp0';
-            const table = document.querySelector('table');
+            const table = document.getElementById('stockTable');
 
-            for (const company of companies) {
+            for (let i = 0; i < companies.length; i++) {
+                const company = companies[i];
+
                 // Get ticker
                 const ticker = company.ticker.toUpperCase();
 
@@ -76,25 +100,74 @@
                 // Calculate % To ATH
                 const percentageToAllTimeHigh = ((highestPrice - currentPrice) / currentPrice) * 100;
 
-                const row = table.insertRow(-1);
-                const cell1 = row.insertCell(0);
-                const cell2 = row.insertCell(1);
-                const cell3 = row.insertCell(2);
-                const cell4 = row.insertCell(3);
-                const cell5 = row.insertCell(4);
+                // Store data in the array
+                const stockData = {
+                    companyName: company.name,
+                    stockTicker: company.ticker,
+                    allTimeHighPrice: highestPrice.toFixed(2),
+                    currentPrice: currentPrice.toFixed(2),
+                    percentageToAllTimeHigh: percentageToAllTimeHigh.toFixed(2) + '%'
+                };
 
-                cell1.innerHTML = company.name;
-                cell2.innerHTML = company.ticker;
-                cell3.innerHTML = highestPrice.toFixed(2);
-                cell4.innerHTML = currentPrice.toFixed(2);
-                cell5.innerHTML = percentageToAllTimeHigh.toFixed(2) + '%';
-                
-                // Wait
-                await delay(1500);
+                stockDataArray.push(stockData);
+
+                // Display data in the table after each API request
+                displayDataInTable(stockData);
+
+                // Wait for 65 seconds after every 60 API requests
+                if ((i + 1) % 30 === 0 && i !== companies.length - 1) {
+                    await delay(65000);
+                }
             }
         }
 
-        // Function to get the date of the number years ago from today.
+        function displayDataInTable(rowData) {
+            const table = document.getElementById('stockTable');
+            const row = table.insertRow(-1);
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            const cell3 = row.insertCell(2);
+            const cell4 = row.insertCell(3);
+            const cell5 = row.insertCell(4);
+            const cell6 = row.insertCell(5);
+
+            // Add a new column that counts the rows starting from 1
+            cell1.innerHTML = table.rows.length - 1;
+            cell2.innerHTML = rowData.companyName;
+            cell3.innerHTML = rowData.stockTicker;
+            cell4.innerHTML = rowData.allTimeHighPrice;
+            cell5.innerHTML = rowData.currentPrice;
+            cell6.innerHTML = rowData.percentageToAllTimeHigh;
+        }
+
+        function sortTable(columnIndex) {
+            const table = document.getElementById('stockTable');
+            const rows = Array.from(table.rows).slice(1); // Exclude the header row
+            const isNumeric = columnIndex === 0 || columnIndex === 3 || columnIndex === 4 || columnIndex === 5;
+
+            // Sort rows based on the selected column
+            rows.sort((a, b) => {
+                const aValue = isNumeric ? parseFloat(a.cells[columnIndex].innerHTML) : a.cells[columnIndex].innerHTML;
+                const bValue = isNumeric ? parseFloat(b.cells[columnIndex].innerHTML) : b.cells[columnIndex].innerHTML;
+
+                if (aValue < bValue) return -1 * sortOrder;
+                if (aValue > bValue) return 1 * sortOrder;
+                return 0;
+            });
+
+            // Clear the table
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+
+            // Append sorted rows to the table
+            rows.forEach(row => table.appendChild(row));
+
+            // Toggle the sort order for the next click
+            sortOrder *= -1;
+        }
+
+        // Function to get the date of the number of years ago from today.
         function getDateOfTheNumberOfYearsAgoFromToday(yearsAgo) {
             const currentDate = new Date();
             currentDate.setFullYear(currentDate.getFullYear() - yearsAgo);

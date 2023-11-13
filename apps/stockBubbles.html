@@ -1,100 +1,372 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    background-color: #222222;
-    overflow: hidden;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Tracker</title>
+  <style>
+    body {
+      background-color: #222222;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+    }
 
-  .circle {
-    position: absolute;
-    border-radius: 50%;
-    color: white;
-    text-align: center;
-    line-height: 2.5;
-    font-size: 14px;
-  }
-</style>
-<title>Stock Ticker App</title>
+    #circles-section,
+    #table-section {
+      width: 80%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid white;
+      padding: 8px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    th:hover {
+      cursor: pointer;
+    }
+
+    #circles-container {
+      position: relative;
+      width: 100%;
+      height: 900px;
+      border: 1px solid white;
+      margin-bottom: 20px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .moving-circle {
+      position: absolute;
+      background-color: transparent;
+      border: 2px solid;
+      border-radius: 50%;
+      text-align: center;
+      padding: 10px;
+      cursor: grab;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .positive-change {
+      border-color: green;
+    }
+
+    .negative-change {
+      border-color: red;
+    }
+
+    .circle-ticker-text {
+      color: white;
+      font-size: 12px;
+    }
+
+    .circle-percentage-text {
+      color: white;
+      font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+
+      #circles-section,
+      #table-section {
+        width: 100%;
+      }
+
+      #circles-container {
+        height: 300px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<script>
-  const data = [
-    { ticker: "AAPL", change: 3 },
-    { ticker: "MSFT", change: 2 },
-    { ticker: "GOOG", change: 3 },
-    { ticker: "AMZN", change: 1 },
-    { ticker: "NVDA", change: 6 },
-    { ticker: "TSLA", change: 4 },
-    { ticker: "META", change: -5 },
-    { ticker: "UNH", change: -1 },
-    { ticker: "JPM", change: 1 },
-    { ticker: "AVGO", change: 2 },
-    { ticker: "BABA", change: -2 },
-    { ticker: "AMD", change: 5 },
-  ];
+  <div id="circles-section">
+    <h2>Stock Bubbles</h2>
+    <div id="circles-container"></div>
+  </div>
+  <div id="table-section">
+    <h2>Stock Information</h2>
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">#</th>
+          <th onclick="sortTable(1)">Stock</th>
+          <th onclick="sortTable(2)">Ticker</th>
+          <th onclick="sortTable(3)">All Time High Price</th>
+          <th onclick="sortTable(4)">Current Price</th>
+          <th onclick="sortTable(5)">Percentage To All Time High</th>
+        </tr>
+      </thead>
+      <tbody id="stock-table-body"></tbody>
+    </table>
+  </div>
+  <script>
+    const apiKey = 'cka8ta1r01qpia5h1cogcka8ta1r01qpia5h1cp0';
+    const stocks = [
+      { name: 'Vanguard S&P500', ticker: 'VOO' },
+      { name: 'Invesco QQQ', ticker: 'QQQ' },
+      { name: 'Apple', ticker: 'AAPL' },
+      { name: 'Microsoft', ticker: 'MSFT' },
+      { name: 'Google', ticker: 'GOOG' },
+      { name: 'Tesla', ticker: 'TSLA' },
+      { name: 'Nvidia', ticker: 'NVDA' },
+      { name: 'Amazon', ticker: 'AMZN' },
+      { name: 'Facebook', ticker: 'META' },
+      { name: 'Broadcom', ticker: 'AVGO' },
+      { name: 'Taiwan Semiconductors', ticker: 'TSM' },
+      { name: 'AMD', ticker: 'AMD' },
+      { name: 'JP Morgan', ticker: 'JPM' },
+      { name: 'Bank Of America', ticker: 'BAC' },
+      { name: 'Old Dominion Freight Line', ticker: 'ODFL' },
+      { name: 'Costco', ticker: 'COST' },
+      { name: 'United Health Group', ticker: 'UNH' },
+      { name: 'NXP Semiconductors', ticker: 'NXPI' },
+      { name: 'Texas Instruments', ticker: 'TXN' },
+      // { name: 'CrowdStrike', ticker: 'CRWD' },
+      // { name: 'Synchrony', ticker: 'SYF' },
+      // { name: 'Coinbase', ticker: 'COIN' },
+      // { name: 'Paypal', ticker: 'PYPL' },
+      // { name: 'Intel', ticker: 'INTC' },
+      // { name: 'Palantir', ticker: 'PLTR' },
+      // { name: 'Datadog', ticker: 'DDOG' },
+      // { name: 'Baidu', ticker: 'BIDU' },
+      // { name: 'Alibaba', ticker: 'BABA' },
+      // { name: 'Xpeng', ticker: 'XPEV' },
+      // { name: 'Riot Platforms', ticker: 'RIOT' },
+      // { name: 'Nio', ticker: 'NIO' },
+      // { name: 'Marathon Digital', ticker: 'MARA' },
+      // { name: 'Rivian', ticker: 'RIVN' },
+      // { name: 'Bit Digital', ticker: 'BTBT' },
+    ];
+    const circlesContainer = document.getElementById('circles-container');
+    const stockTableBody = document.getElementById('stock-table-body');
+    let currentSortColumn = -1;
+    let isAscending = true;
+    let apiRequestCounter = 0;
 
-  const speed = 1.5; // Adjust the speed of the moving circle
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
-  const circles = [];
+    async function fetchStockData() {
+      for (const [index, stock] of stocks.entries()) {
+        if (apiRequestCounter > 0 && apiRequestCounter % 15 === 0) {
+          // Wait for 10 seconds after every 10 API requests
+          await delay(65000);
+        }
 
-  data.forEach(stock => {
-    const circle = document.createElement("div");
-    circle.className = "circle";
-    circle.innerText = `${stock.ticker}\n${stock.change}%`;
-    circle.style.border = stock.change >= 0 ? "2px solid green" : "2px solid red";
-    const size = Math.abs(stock.change) * 10; // Adjust circle size
-    circle.style.width = size + "px";
-    circle.style.height = size + "px";
-    circle.style.top = Math.random() * window.innerHeight + "px";
-    circle.style.left = Math.random() * window.innerWidth + "px";
-    document.body.appendChild(circle);
-    circles.push({ element: circle, x: 1, y: 1 });
-  });
+        try {
+          const candleResponse = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${stock.ticker.toUpperCase()}&resolution=M&from=${getDateOfTheNumberOfYearsAgoFromToday(10)}&to=${getCurrentDate()}&token=${apiKey}`);
+          const candleData = await candleResponse.json();
+          const allTimeHigh = Math.max(...candleData.h);
 
-  function updateCircles() {
-    circles.forEach(circle => {
-      const rect = circle.element.getBoundingClientRect();
-      const dx = circle.x * speed;
-      const dy = circle.y * speed;
+          const quoteResponse = await fetch(`https://finnhub.io/api/v1/quote?symbol=${stock.ticker.toUpperCase()}&token=${apiKey}`);
+          const currentPriceData = await quoteResponse.json();
+          const currentPrice = currentPriceData.c;
 
-      // Bounce off window borders
-      if (rect.left + dx <= 0 || rect.right + dx >= window.innerWidth) {
-        circle.x *= -1;
+          const percentageChange = ((allTimeHigh - currentPrice) / currentPrice) * 100;
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${stock.name}</td>
+            <td>${stock.ticker}</td>
+            <td>${allTimeHigh.toFixed(2)}</td>
+            <td>${currentPrice.toFixed(2)}</td>
+            <td>${percentageChange.toFixed(2)}%</td>
+          `;
+          stockTableBody.appendChild(row);
+
+          const circle = document.createElement('div');
+          circle.classList.add('moving-circle');
+          circle.innerHTML = `
+            <div class="circle-ticker-text">${stock.ticker}</div>
+            <div class="circle-percentage-text">${percentageChange.toFixed(2)}%</div>
+          `;
+          const circleSize = Math.abs(percentageChange) * 2 + 10;
+          circle.style.width = `${circleSize}px`;
+          circle.style.height = `${circleSize}px`;
+          const circleTickerTextFontSize = Math.min(circleSize / 3, 32);
+          const circlePercentageTextFontSize = (circleTickerTextFontSize * (3 / 4));
+          circle.querySelector('.circle-ticker-text').style.fontSize = `${circleTickerTextFontSize}px`;
+          circle.querySelector('.circle-percentage-text').style.fontSize = `${circlePercentageTextFontSize}px`;
+          if (percentageChange >= 0) {
+            circle.classList.add('positive-change');
+          } else {
+            circle.classList.add('negative-change');
+          }
+          circlesContainer.appendChild(circle);
+          const circles = Array.from(circlesContainer.children);
+          const rect = circlesContainer.getBoundingClientRect();
+          const step = 20;
+          let x = (index * 50) % (rect.width - circle.clientWidth);
+          let y = Math.floor((index * 50) / (rect.width - circle.clientWidth)) * step;
+          x = Math.max(0, Math.min(rect.width - circle.clientWidth, x));
+          y = Math.max(0, Math.min(rect.height - circle.clientHeight, y));
+          circle.style.left = x + 'px';
+          circle.style.top = y + 'px';
+          adjustPosition(circle, circles);
+          makeElementDraggable(circle);
+          setInterval(() => {
+            moveCircleRandomly(circle, 0.0);
+          }, 100);
+          apiRequestCounter++;
+        } catch (error) {
+          console.error(error);
+        }
       }
-      if (rect.top + dy <= 0 || rect.bottom + dy >= window.innerHeight) {
-        circle.y *= -1;
-      }
+    }
 
-      // Bounce off other circles
-      circles.forEach(otherCircle => {
+    function getDateOfTheNumberOfYearsAgoFromToday(yearsAgo) {
+      const currentDate = new Date();
+      currentDate.setFullYear(currentDate.getFullYear() - yearsAgo);
+      return Math.floor(currentDate / 1000);
+    }
+
+    function getCurrentDate() {
+      return Math.floor(Date.now() / 1000);
+    }
+
+    function getRandomDirection() {
+      const directions = ['up', 'down', 'left', 'right'];
+      return directions[Math.floor(Math.random() * directions.length)];
+    }
+
+    function moveCircleRandomly(circle, speed) {
+      const direction = getRandomDirection();
+      const rect = circlesContainer.getBoundingClientRect();
+      switch (direction) {
+        case 'up':
+          circle.style.top = Math.max(0, parseFloat(circle.style.top) - speed) + 'px';
+          break;
+        case 'down':
+          circle.style.top = Math.min(rect.height - circle.clientHeight, parseFloat(circle.style.top) + speed) + 'px';
+          break;
+        case 'left':
+          circle.style.left = Math.max(0, parseFloat(circle.style.left) - speed) + 'px';
+          break;
+        case 'right':
+          circle.style.left = Math.min(rect.width - circle.clientWidth, parseFloat(circle.style.left) + speed) + 'px';
+          break;
+        default:
+          break;
+      }
+      adjustPosition(circle, Array.from(circlesContainer.children));
+    }
+
+    function detectCollision(circle, circles) {
+      const circleRect = circle.getBoundingClientRect();
+      for (const otherCircle of circles) {
         if (otherCircle !== circle) {
-          const otherRect = otherCircle.element.getBoundingClientRect();
+          const otherRect = otherCircle.getBoundingClientRect();
           if (
-            rect.left + dx < otherRect.right &&
-            rect.right + dx > otherRect.left &&
-            rect.top + dy < otherRect.bottom &&
-            rect.bottom + dy > otherRect.top
+            circleRect.right > otherRect.left &&
+            circleRect.left < otherRect.right &&
+            circleRect.bottom > otherRect.top &&
+            circleRect.top < otherRect.bottom
           ) {
-            circle.x *= -1;
-            circle.y *= -1;
+            return true;
           }
         }
+      }
+      return false;
+    }
+
+    function adjustPosition(circle, circles) {
+      const rect = circlesContainer.getBoundingClientRect();
+      let x = parseFloat(circle.style.left);
+      let y = parseFloat(circle.style.top);
+      while (detectCollision(circle, circles)) {
+        x += 5;
+        y += 5;
+        x = Math.max(0, Math.min(rect.width - circle.clientWidth, x));
+        y = Math.max(0, Math.min(rect.height - circle.clientHeight, y));
+        circle.style.left = x + 'px';
+        circle.style.top = y + 'px';
+      }
+    }
+
+    function makeElementDraggable(element) {
+      let isDragging = false;
+      element.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        element.style.cursor = 'grabbing';
       });
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const rect = circlesContainer.getBoundingClientRect();
+          let x = e.clientX - rect.left - element.clientWidth / 2;
+          let y = e.clientY - rect.top - element.clientHeight / 2;
+          x = Math.max(0, Math.min(rect.width - element.clientWidth, x));
+          y = Math.max(0, Math.min(rect.height - element.clientHeight, y));
+          element.style.left = x + 'px';
+          element.style.top = y + 'px';
+          adjustPosition(element, Array.from(circlesContainer.children));
+        }
+      });
+      document.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          element.style.cursor = 'grab';
+        }
+      });
+    }
 
-      circle.element.style.top = rect.top + dy + "px";
-      circle.element.style.left = rect.left + dx + "px";
-    });
+    function sortTable(columnIndex) {
+      const rows = Array.from(document.querySelectorAll('#stock-table-body tr'));
+      rows.sort((a, b) => {
+        const aValue = a.children[columnIndex].textContent;
+        const bValue = b.children[columnIndex].textContent;
+        if (!isNaN(parseFloat(aValue)) && !isNaN(parseFloat(bValue))) {
+          return parseFloat(aValue) - parseFloat(bValue);
+        } else {
+          return aValue.localeCompare(bValue);
+        }
+      });
+      if (currentSortColumn === columnIndex) {
+        rows.reverse();
+        isAscending = !isAscending;
+      } else {
+        isAscending = true;
+      }
+      currentSortColumn = columnIndex;
+      if (!isAscending) {
+        rows.reverse();
+      }
+      rows.forEach((row) => {
+        stockTableBody.appendChild(row);
+      });
+    }
 
-    requestAnimationFrame(updateCircles);
-  }
+    function fetchAndUpdateData() {
+      stockTableBody.innerHTML = '';
+      circlesContainer.innerHTML = '';
+      fetchStockData();
+    }
 
-  updateCircles();
-</script>
+    // Fetch data initially
+    fetchAndUpdateData();
+    // Fetch new data every 6 minutes
+    setInterval(fetchAndUpdateData, 6 * 60 * 1000);
+  </script>
 </body>
+
 </html>
