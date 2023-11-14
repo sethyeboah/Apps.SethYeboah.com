@@ -141,27 +141,30 @@
       { name: 'United Health Group', ticker: 'UNH' },
       { name: 'NXP Semiconductors', ticker: 'NXPI' },
       { name: 'Texas Instruments', ticker: 'TXN' },
-      // { name: 'CrowdStrike', ticker: 'CRWD' },
-      // { name: 'Synchrony', ticker: 'SYF' },
-      // { name: 'Coinbase', ticker: 'COIN' },
-      // { name: 'Paypal', ticker: 'PYPL' },
-      // { name: 'Intel', ticker: 'INTC' },
-      // { name: 'Palantir', ticker: 'PLTR' },
-      // { name: 'Datadog', ticker: 'DDOG' },
-      // { name: 'Baidu', ticker: 'BIDU' },
-      // { name: 'Alibaba', ticker: 'BABA' },
-      // { name: 'Xpeng', ticker: 'XPEV' },
-      // { name: 'Riot Platforms', ticker: 'RIOT' },
-      // { name: 'Nio', ticker: 'NIO' },
-      // { name: 'Marathon Digital', ticker: 'MARA' },
-      // { name: 'Rivian', ticker: 'RIVN' },
-      // { name: 'Bit Digital', ticker: 'BTBT' },
+      { name: 'CrowdStrike', ticker: 'CRWD' },
+      { name: 'Synchrony', ticker: 'SYF' },
+      { name: 'Coinbase', ticker: 'COIN' },
+      { name: 'Paypal', ticker: 'PYPL' },
+      { name: 'Intel', ticker: 'INTC' },
+      { name: 'Palantir', ticker: 'PLTR' },
+      { name: 'Datadog', ticker: 'DDOG' },
+      { name: 'Baidu', ticker: 'BIDU' },
+      { name: 'Alibaba', ticker: 'BABA' },
+      { name: 'Xpeng', ticker: 'XPEV' },
+      { name: 'Riot Platforms', ticker: 'RIOT' },
+      { name: 'Nio', ticker: 'NIO' },
+      { name: 'Marathon Digital', ticker: 'MARA' },
+      { name: 'Rivian', ticker: 'RIVN' },
+      { name: 'Bit Digital', ticker: 'BTBT' },
     ];
+
     const circlesContainer = document.getElementById('circles-container');
     const stockTableBody = document.getElementById('stock-table-body');
     let currentSortColumn = -1;
     let isAscending = true;
     let apiRequestCounter = 0;
+
+    const stockDataArray = [];
 
     function delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
@@ -169,7 +172,7 @@
 
     async function fetchStockData() {
       for (const [index, stock] of stocks.entries()) {
-        if (apiRequestCounter > 0 && apiRequestCounter % 15 === 0) {
+        if (apiRequestCounter > 0 && apiRequestCounter % 20 === 0) {
           // Wait for 10 seconds after every 10 API requests
           await delay(65000);
         }
@@ -184,35 +187,22 @@
           const currentPrice = currentPriceData.c;
 
           const percentageChange = ((allTimeHigh - currentPrice) / currentPrice) * 100;
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${stock.name}</td>
-            <td>${stock.ticker}</td>
-            <td>${allTimeHigh.toFixed(2)}</td>
-            <td>${currentPrice.toFixed(2)}</td>
-            <td>${percentageChange.toFixed(2)}%</td>
-          `;
-          stockTableBody.appendChild(row);
 
-          const circle = document.createElement('div');
-          circle.classList.add('moving-circle');
-          circle.innerHTML = `
-            <div class="circle-ticker-text">${stock.ticker}</div>
-            <div class="circle-percentage-text">${percentageChange.toFixed(2)}%</div>
-          `;
-          const circleSize = Math.abs(percentageChange) * 2 + 10;
-          circle.style.width = `${circleSize}px`;
-          circle.style.height = `${circleSize}px`;
-          const circleTickerTextFontSize = Math.min(circleSize / 3, 32);
-          const circlePercentageTextFontSize = (circleTickerTextFontSize * (3 / 4));
-          circle.querySelector('.circle-ticker-text').style.fontSize = `${circleTickerTextFontSize}px`;
-          circle.querySelector('.circle-percentage-text').style.fontSize = `${circlePercentageTextFontSize}px`;
-          if (percentageChange >= 0) {
-            circle.classList.add('positive-change');
-          } else {
-            circle.classList.add('negative-change');
-          }
+          const stockData = {
+            index,
+            name: stock.name,
+            ticker: stock.ticker,
+            allTimeHigh: allTimeHigh.toFixed(2),
+            currentPrice: currentPrice.toFixed(2),
+            percentageChange: percentageChange.toFixed(2),
+          };
+
+          stockDataArray.push(stockData);
+
+          const tableRow = createTable(stockData);
+          stockTableBody.appendChild(tableRow);
+
+          const circle = createCircle(stockData);
           circlesContainer.appendChild(circle);
           const circles = Array.from(circlesContainer.children);
           const rect = circlesContainer.getBoundingClientRect();
@@ -233,6 +223,41 @@
           console.error(error);
         }
       }
+    }
+
+    function createTable(stockData) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${stockData.index + 1}</td>
+        <td>${stockData.name}</td>
+        <td>${stockData.ticker}</td>
+        <td>${stockData.allTimeHigh}</td>
+        <td>${stockData.currentPrice}</td>
+        <td>${stockData.percentageChange}%</td>
+      `;
+      return row;
+    }
+
+    function createCircle(stockData) {
+      const circle = document.createElement('div');
+      circle.classList.add('moving-circle');
+      circle.innerHTML = `
+        <div class="circle-ticker-text">${stockData.ticker}</div>
+        <div class="circle-percentage-text">${stockData.percentageChange}%</div>
+      `;
+      const circleSize = Math.abs(stockData.percentageChange) * 2 + 10;
+      circle.style.width = `${circleSize}px`;
+      circle.style.height = `${circleSize}px`;
+      const circleTickerTextFontSize = Math.min(circleSize / 3, 32);
+      const circlePercentageTextFontSize = (circleTickerTextFontSize * (3 / 4));
+      circle.querySelector('.circle-ticker-text').style.fontSize = `${circleTickerTextFontSize}px`;
+      circle.querySelector('.circle-percentage-text').style.fontSize = `${circlePercentageTextFontSize}px`;
+      if (stockData.percentageChange >= 0) {
+        circle.classList.add('positive-change');
+      } else {
+        circle.classList.add('negative-change');
+      }
+      return circle;
     }
 
     function getDateOfTheNumberOfYearsAgoFromToday(yearsAgo) {
@@ -359,6 +384,7 @@
     function fetchAndUpdateData() {
       stockTableBody.innerHTML = '';
       circlesContainer.innerHTML = '';
+      stockDataArray.length = 0; // Clear the stockDataArray
       fetchStockData();
     }
 
