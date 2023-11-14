@@ -45,9 +45,9 @@
     #circles-container {
       position: relative;
       width: 100%;
-      height: 900px;
+      height: 600px;
       border: 1px solid white;
-      margin-bottom: 20px;
+      /* margin-bottom: 20px; */
       margin: 0;
       padding: 0;
     }
@@ -89,10 +89,6 @@
       #circles-section,
       #table-section {
         width: 100%;
-      }
-
-      #circles-container {
-        height: 300px;
       }
     }
   </style>
@@ -172,7 +168,7 @@
 
     async function fetchStockData() {
       for (const [index, stock] of stocks.entries()) {
-        if (apiRequestCounter > 0 && apiRequestCounter % 20 === 0) {
+        if (apiRequestCounter > 0 && apiRequestCounter % 30 === 0) {
           // Wait for 10 seconds after every 10 API requests
           await delay(65000);
         }
@@ -239,17 +235,19 @@
     }
 
     function createCircle(stockData) {
+      const maxCircleSize = 100;
+
       const circle = document.createElement('div');
       circle.classList.add('moving-circle');
       circle.innerHTML = `
-        <div class="circle-ticker-text">${stockData.ticker}</div>
-        <div class="circle-percentage-text">${stockData.percentageChange}%</div>
+      <div class="circle-ticker-text">${stockData.ticker}</div>
+      <div class="circle-percentage-text">${stockData.percentageChange}%</div>
       `;
-      const circleSize = Math.abs(stockData.percentageChange) * 2 + 10;
+      const circleSize = Math.min(maxCircleSize, Math.abs(stockData.percentageChange) * 2 + 10);
       circle.style.width = `${circleSize}px`;
       circle.style.height = `${circleSize}px`;
       const circleTickerTextFontSize = Math.min(circleSize / 3, 32);
-      const circlePercentageTextFontSize = (circleTickerTextFontSize * (3 / 4));
+      const circlePercentageTextFontSize = circleTickerTextFontSize * (3 / 4);
       circle.querySelector('.circle-ticker-text').style.fontSize = `${circleTickerTextFontSize}px`;
       circle.querySelector('.circle-percentage-text').style.fontSize = `${circlePercentageTextFontSize}px`;
       if (stockData.percentageChange >= 0) {
@@ -319,11 +317,14 @@
       const rect = circlesContainer.getBoundingClientRect();
       let x = parseFloat(circle.style.left);
       let y = parseFloat(circle.style.top);
+
       while (detectCollision(circle, circles)) {
-        x += 5;
-        y += 5;
+        x += Math.random() * 10 - 5; // Random change between -5 and 5
+        y += Math.random() * 10 - 5; // Random change between -5 and 5
+
         x = Math.max(0, Math.min(rect.width - circle.clientWidth, x));
         y = Math.max(0, Math.min(rect.height - circle.clientHeight, y));
+
         circle.style.left = x + 'px';
         circle.style.top = y + 'px';
       }
